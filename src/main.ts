@@ -52,6 +52,8 @@ const initializeApp = () => {
     map.invalidateSize();
   }, 100);
 
+  const orbitLayerGroup = L.layerGroup().addTo(map);
+
   // Animation Loop Function
   const updateLoop = () => {
     if (satellitesInfo.length === 0) return;
@@ -59,19 +61,23 @@ const initializeApp = () => {
     const now = new Date();
     const positions: SatellitePosition[] = [];
 
+    // 1. Update Map Markers and Popups
     satellitesInfo.forEach(sat => {
       const pos = computeSatellitePosition(sat, now);
       if (pos) {
         positions.push(pos);
+        const popupText = `<b>${sat.name}</b><br/>Alt: ${pos.altitudeKm.toFixed(1)} km<br/>Spd: ${pos.velocityKmS.toFixed(2)} km/s`;
 
         // Update Map Marker
         if (satelliteMarkers.has(sat.name)) {
-          satelliteMarkers.get(sat.name)!.setLatLng([pos.latitude, pos.longitude]);
+          const marker = satelliteMarkers.get(sat.name)!;
+          marker.setLatLng([pos.latitude, pos.longitude]);
+          marker.setPopupContent(popupText);
         } else {
           const marker = L.marker([pos.latitude, pos.longitude], {
             icon: satIcon,
             title: sat.name
-          }).bindPopup(`<b>${sat.name}</b><br/>Alt: ${pos.altitudeKm.toFixed(1)} km<br/>Spd: ${pos.velocityKmS.toFixed(2)} km/s`);
+          }).bindPopup(popupText);
 
           marker.addTo(map);
           satelliteMarkers.set(sat.name, marker);
@@ -79,7 +85,43 @@ const initializeApp = () => {
       }
     });
 
-    // Update UI Status Panel
+    // 2. Update Orbit Trails (Past 18 Hours)
+    orbitLayerGroup.clearLayers();
+    satellitesInfo.forEach(sat => {
+      let currentSegment: L.LatLngTuple[] = [];
+      const allSegments: L.LatLngTuple[][] = [currentSegment];
+
+      // Calculate positions for the past 18 hours at 5 minute intervals (higher resolution)
+      for (let i = 216; i >= 0; i--) {
+        const pastTime = new Date(now.getTime() - i * 5 * 60 * 1000);
+        const pos = computeSatellitePosition(sat, pastTime);
+
+        if (pos && !isNaN(pos.latitude) && !isNaN(pos.longitude)) {
+          // Check for large longitude jumps (crossing date line)
+          if (currentSegment.length > 0) {
+            const lastPoint = currentSegment[currentSegment.length - 1];
+            // If distance is greater than ~100 degrees, split line to avoid spanning map
+            if (Math.abs(pos.longitude - lastPoint[1]) > 100) {
+              currentSegment = [];
+              allSegments.push(currentSegment);
+            }
+          }
+          currentSegment.push([pos.latitude, pos.longitude]);
+        }
+      }
+
+      allSegments.forEach(segment => {
+        if (segment.length > 1) {
+          L.polyline(segment, {
+            color: 'rgba(0, 242, 254, 0.4)',
+            weight: 3,
+            dashArray: '5, 10'
+          }).addTo(orbitLayerGroup);
+        }
+      });
+    });
+
+    // 3. Update UI Status Panel
     uiManager.updateSatellites(positions);
   };
 
@@ -96,44 +138,6 @@ const initializeApp = () => {
 
       satellitesInfo = parseTLE(tleData);
       uiManager.hideError();
-
-      // --- Draw Past 18 Hours Trajectory ---
-      const now = new Date();
-      // Calculate positions for the past 18 hours at 5 minute intervals (higher resolution)
-      // 18 hours * 12 intervals/hour = 216 points
-      satellitesInfo.forEach(sat => {
-        let currentSegment: L.LatLngTuple[] = [];
-        const allSegments: L.LatLngTuple[][] = [currentSegment];
-
-        for (let i = 216; i >= 0; i--) {
-          const pastTime = new Date(now.getTime() - i * 5 * 60 * 1000);
-          const pos = computeSatellitePosition(sat, pastTime);
-
-          if (pos && !isNaN(pos.latitude) && !isNaN(pos.longitude)) {
-            // Check for large longitude jumps (crossing date line)
-            if (currentSegment.length > 0) {
-              const lastPoint = currentSegment[currentSegment.length - 1];
-              // If distance is greater than ~100 degrees, split line to avoid spanning map
-              if (Math.abs(pos.longitude - lastPoint[1]) > 100) {
-                currentSegment = [];
-                allSegments.push(currentSegment);
-              }
-            }
-            currentSegment.push([pos.latitude, pos.longitude]);
-          }
-        }
-
-        allSegments.forEach(segment => {
-          if (segment.length > 1) {
-            L.polyline(segment, {
-              color: 'rgba(0, 242, 254, 0.4)',
-              weight: 3,
-              dashArray: '5, 10'
-            }).addTo(map);
-          }
-        });
-      });
-      // -------------------------------------
 
       // Start loop only after data is fetched successfully
       updateLoop();
