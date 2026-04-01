@@ -1,4 +1,4 @@
-# QZSS Viewer (Michibiki Real-time Tracker)
+# QZSS Live Viewer (Michibiki Real-time Tracker)
 
 日本の準天頂衛星システム「みちびき（QZSS: Quasi-Zenith Satellite System）」の現在の位置・高度・速度を、Webブラウザ上の地図にリアルタイムで可視化する簡易的なアプリケーションです。
 
@@ -61,7 +61,7 @@ FFFTPやWinSCPなどのFTPソフトを使用して、サーバーへファイル
 
 ---
 
-# QZSS Viewer (Michibiki Real-time Tracker)
+# QZSS Live Viewer (Michibiki Real-time Tracker)
 
 It is a simple application that visualises the current position(Latitude,Longitude), altitude, and speed of Michibiki, the Japan's Quasi-Zenith Satellite System (QZSS) in real time on a map online web browser.
 
