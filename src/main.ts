@@ -1,8 +1,7 @@
 import './style.css';
 import L from 'leaflet';
-import { fetchQZSSTLE } from './api/tle';
 import { parseTLE, computeSatellitePosition } from './utils/orbit';
-import type { SatelliteInfo, SatellitePosition } from './utils/orbit';
+import type { SatelliteInfo } from './utils/orbit';
 import { UIManager } from './ui/UIManager';
 
 // Fix Leaflet's default icon path issues with bundlers
@@ -11,14 +10,6 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
-// Custom Icon for Satellite
-const satIcon = L.divIcon({
-  className: 'satellite-marker',
-  html: `<div style="width: 16px; height: 16px; background-color: #00f2fe; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px #00f2fe;"></div>`,
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
 });
 
 const initMap = () => {
@@ -53,46 +44,109 @@ const initializeApp = () => {
   }, 100);
 
   const orbitLayerGroup = L.layerGroup().addTo(map);
+  let trailHours = 18;
+
+  const getSatIcon = (color: string) => {
+    return L.divIcon({
+      className: 'satellite-marker',
+      html: `<div style="width: 14px; height: 14px; background-color: ${color}; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px ${color};"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+    });
+  };
+
+  const renderList = () => {
+    uiManager.updateSatelliteList(satellitesInfo, (id, visible) => {
+      const sat = satellitesInfo.find(s => s.id === id);
+      if (sat) {
+        sat.visible = visible;
+        updateLoop(); // Force redraw immediately
+      }
+    });
+  };
+
+  uiManager.onTrailLengthChange = (hours) => {
+    trailHours = hours;
+    updateLoop();
+  };
+
+  uiManager.onAddSatellite = (tle) => {
+    try {
+      const newSats = parseTLE(tle, 'Custom');
+      if (newSats.length > 0) {
+        satellitesInfo.push(...newSats);
+        renderList();
+        updateLoop();
+      } else {
+        alert("Could not parse TLE data. Please check format.");
+      }
+    } catch (e) {
+      alert("Error parsing TLE data.");
+    }
+  };
 
   // Animation Loop Function
   const updateLoop = () => {
     if (satellitesInfo.length === 0) return;
 
     const now = new Date();
-    const positions: SatellitePosition[] = [];
 
-    // 1. Update Map Markers and Popups
+    // 1. Cleanup invisible markers
     satellitesInfo.forEach(sat => {
+      if (!sat.visible && satelliteMarkers.has(sat.id)) {
+        map.removeLayer(satelliteMarkers.get(sat.id)!);
+        satelliteMarkers.delete(sat.id);
+      }
+    });
+
+    const visibleSats = satellitesInfo.filter(s => s.visible);
+
+    // 2. Update Map Markers and Popups
+    visibleSats.forEach(sat => {
       const pos = computeSatellitePosition(sat, now);
       if (pos) {
-        positions.push(pos);
-        const popupText = `<b>${sat.name}</b><br/>Alt: ${pos.altitudeKm.toFixed(1)} km<br/>Spd: ${pos.velocityKmS.toFixed(2)} km/s`;
+        const popupText = `<div style="font-family: 'Inter', sans-serif;">
+            <strong style="font-size: 1.1em; color: ${sat.color}">${sat.name}</strong><br/>
+            <b>Lat / Lon:</b> ${pos.latitude.toFixed(4)}° / ${pos.longitude.toFixed(4)}°<br/>
+            <b>Altitude:</b> ${pos.altitudeKm.toFixed(2)} km<br/>
+            <b>Velocity:</b> ${pos.velocityKmS.toFixed(2)} km/s
+        </div>`;
 
         // Update Map Marker
-        if (satelliteMarkers.has(sat.name)) {
-          const marker = satelliteMarkers.get(sat.name)!;
+        if (satelliteMarkers.has(sat.id)) {
+          const marker = satelliteMarkers.get(sat.id)!;
           marker.setLatLng([pos.latitude, pos.longitude]);
-          marker.setPopupContent(popupText);
+          
+          // Only update popup if it is open, otherwise it forces DOM updates needlessly
+          if (marker.isPopupOpen()) {
+            marker.setPopupContent(popupText);
+          } else {
+            // Unbind and rebind to update the stored content quietly
+            marker.getPopup()!.setContent(popupText);
+          }
         } else {
           const marker = L.marker([pos.latitude, pos.longitude], {
-            icon: satIcon,
+            icon: getSatIcon(sat.color),
             title: sat.name
           }).bindPopup(popupText);
 
           marker.addTo(map);
-          satelliteMarkers.set(sat.name, marker);
+          satelliteMarkers.set(sat.id, marker);
         }
       }
     });
 
-    // 2. Update Orbit Trails (Past 18 Hours)
+    // 3. Update Orbit Trails
     orbitLayerGroup.clearLayers();
-    satellitesInfo.forEach(sat => {
+    
+    // Total calculation points = Hours * 12 (since we use 5 min intervals)
+    const pointsCount = Math.max(1, trailHours * 12);
+
+    visibleSats.forEach(sat => {
       let currentSegment: L.LatLngTuple[] = [];
       const allSegments: L.LatLngTuple[][] = [currentSegment];
 
-      // Calculate positions for the past 18 hours at 5 minute intervals (higher resolution)
-      for (let i = 216; i >= 0; i--) {
+      for (let i = pointsCount; i >= 0; i--) {
         const pastTime = new Date(now.getTime() - i * 5 * 60 * 1000);
         const pos = computeSatellitePosition(sat, pastTime);
 
@@ -113,31 +167,26 @@ const initializeApp = () => {
       allSegments.forEach(segment => {
         if (segment.length > 1) {
           L.polyline(segment, {
-            color: 'rgba(0, 242, 254, 0.4)',
-            weight: 3,
-            dashArray: '5, 10'
+            color: sat.color,
+            weight: 2,
+            dashArray: '4, 8',
+            opacity: 0.6
           }).addTo(orbitLayerGroup);
         }
       });
     });
-
-    // 3. Update UI Status Panel
-    uiManager.updateSatellites(positions);
   };
 
   // Start the background data fetching process
   const startApp = async () => {
     try {
-      uiManager.showLoading('Fetching Michibiki (QZSS) orbit data...');
-      let tleData = await fetchQZSSTLE();
-
-      // Basic sanity check for valid TLE string
-      if (!tleData || !tleData.includes('QZS')) {
-        throw new Error("Invalid TLE data received. CelesTrak might be returning an error page.");
-      }
-
-      satellitesInfo = parseTLE(tleData);
+      uiManager.showLoading('Fetching Live Orbit Data...');
+      // IMPORTANT: Changed to use fetchAllSatellites from the refactored tle.ts
+      const { fetchAllSatellites } = await import('./api/tle');
+      satellitesInfo = await fetchAllSatellites();
       uiManager.hideError();
+
+      renderList();
 
       // Start loop only after data is fetched successfully
       updateLoop();

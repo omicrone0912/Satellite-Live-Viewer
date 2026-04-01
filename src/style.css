@@ -141,29 +141,148 @@ h1 {
 }
 
 .satellite-card {
+  /* No longer used for main list, kept for popup or fallback */
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 16px;
-  transition: transform 0.2s, background 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.control-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #dee2e6;
+}
+
+@media (prefers-color-scheme: light) {
+  .control-group label {
+    color: #495057;
+  }
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #00f2fe;
+}
+
+textarea#tle-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  resize: vertical;
+}
+
+@media (prefers-color-scheme: light) {
+  textarea#tle-input {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: #333;
+  }
+}
+
+textarea#tle-input:focus {
+  outline: 2px solid #00f2fe;
+}
+
+button#add-tle-btn {
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+button#add-tle-btn:hover {
+  opacity: 0.9;
+}
+
+.list-header {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+}
+
+@media (prefers-color-scheme: light) {
+  .list-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}
+
+.list-view {
+  gap: 8px;
+  max-height: calc(100vh - 360px);
+}
+
+.sat-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 @media (prefers-color-scheme: light) {
-  .satellite-card {
-    background: rgba(0, 0, 0, 0.03);
+  .sat-list-item {
+    background: rgba(0, 0, 0, 0.02);
     border: 1px solid rgba(0, 0, 0, 0.05);
   }
 }
 
-.satellite-card:hover {
+.sat-list-item:hover {
   background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
 }
 
 @media (prefers-color-scheme: light) {
-  .satellite-card:hover {
+  .sat-list-item:hover {
     background: rgba(0, 0, 0, 0.05);
   }
+}
+
+.sat-list-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sat-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 6px var(--dot-color, #fff);
+  background-color: var(--dot-color, #fff);
+}
+
+/* Custom Checkbox */
+.sat-checkbox {
+  accent-color: #00f2fe;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
 }
 
 .sat-name {

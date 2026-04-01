@@ -22,16 +22,27 @@
     <!-- Full screen map container -->
     <div id="map"></div>
 
-    <!-- Glassmorphism overlay panel -->
     <div class="panel-overlay">
       <header>
-        <h1>QZSS Live Viewer</h1>
-        <p class="subtitle">Michibiki Real-time Tracking</p>
+        <h1>Live Satellite Tracker</h1>
+        <p class="subtitle">Real-time Orbit Tracking</p>
       </header>
 
-      <div id="status-container" class="status-container">
-        <!-- Populated by JS -->
-        <p class="loading-text">Fetching orbit data...</p>
+      <div class="control-group">
+        <label for="trail-slider">Orbit Trail Length: <span id="trail-val">18</span> Hrs</label>
+        <input type="range" id="trail-slider" min="1" max="24" value="18" />
+      </div>
+
+      <div class="control-group">
+        <label>Add Custom TLE (2 or 3 lines)</label>
+        <textarea id="tle-input" rows="3" placeholder="ISS (ZARYA)&#10;1 25544U 98067A   21092.6..."></textarea>
+        <button id="add-tle-btn">Add Satellite</button>
+      </div>
+
+      <div class="list-header">Satellites</div>
+      <div id="status-container" class="status-container list-view">
+        <!-- Populated by JS with satellite toggles -->
+        <p class="loading-text">Fetching satellite data...</p>
       </div>
 
       <div id="error-banner" class="error-banner hidden">
