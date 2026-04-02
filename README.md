@@ -1,4 +1,4 @@
-# QZSS Viewer (Michibiki Real-time Tracker)
+# QZSS Live Viewer (Michibiki Real-time Tracker)
 
 日本の準天頂衛星システム「みちびき（QZSS: Quasi-Zenith Satellite System）」の現在の位置・高度・速度を、Webブラウザ上の地図にリアルタイムで可視化する簡易的なアプリケーションです。
 
@@ -6,7 +6,7 @@
 
 ## 機能・特徴
 
-*   **リアルタイムトラッキング**: みちびき各号機（1R号機, 2号機, 3号機, 4号機, 6号機）の現在位置を地図上にプロットし、1秒ごとにアニメーション更新します。
+*   **リアルタイムトラッキング**: みちびき各号機（1R号機, 2号機, 3号機, 4号機, 6号機）の現在位置を地図上にプロットし、1秒ごとにアニメーションを更新します。
 *   **軌跡表示**: 過去18時間分の衛星の軌跡を地図上にプロットし、みちびきの軌道を視覚化できます。
 *   **詳細データの表示**: パネル上で各衛星の現在の「高度 (Altitude)」と「速度 (Velocity)」をリアルタイムで確認できます。
 *   **オフライン/API障害フォールバック**: CelesTrak APIへのアクセスが遮断されたり、サーバーダウンした場合でも、内部に組み込まれたデータに自動で補完してくれます。
@@ -61,7 +61,7 @@ FFFTPやWinSCPなどのFTPソフトを使用して、サーバーへファイル
 
 ---
 
-# QZSS Viewer (Michibiki Real-time Tracker)
+# QZSS Live Viewer (Michibiki Real-time Tracker)
 
 It is a simple application that visualises the current position(Latitude,Longitude), altitude, and speed of Michibiki, the Japan's Quasi-Zenith Satellite System (QZSS) in real time on a map online web browser.
 

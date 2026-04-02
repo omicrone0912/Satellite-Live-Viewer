@@ -1,8 +1,12 @@
 import * as satellite from 'satellite.js';
 
 export interface SatelliteInfo {
+    id: string;
     name: string;
     satrec: satellite.SatRec;
+    color: string;
+    visible: boolean;
+    group: string;
 }
 
 export interface SatellitePosition {
@@ -14,11 +18,21 @@ export interface SatellitePosition {
 }
 
 /**
+ * Generates a random bright color
+ */
+export const getRandomColor = () => {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 100%, 65%)`; // Bright pastel colors
+};
+
+/**
  * Parses raw TLE string into a list of satellite records
  * @param tleData Raw TLE 3-line string (Name, Line1, Line2)
+ * @param groupName Category/Group name for these satellites
+ * @param defaultColor Optional color for all parsed satellites, random if omitted
  * @returns Array of parsed satellites
  */
-export const parseTLE = (tleData: string): SatelliteInfo[] => {
+export const parseTLE = (tleData: string, groupName: string = 'Custom', defaultColor?: string): SatelliteInfo[] => {
     const lines = tleData.trim().split('\n');
     const satellites: SatelliteInfo[] = [];
 
@@ -29,7 +43,14 @@ export const parseTLE = (tleData: string): SatelliteInfo[] => {
             const tleLine2 = lines[i + 2].trim();
 
             const satrec = satellite.twoline2satrec(tleLine1, tleLine2);
-            satellites.push({ name, satrec });
+            satellites.push({
+                id: `${groupName}_${name.replace(/\s+/g, '_')}_${i}`,
+                name,
+                satrec,
+                color: defaultColor || getRandomColor(),
+                visible: true,
+                group: groupName
+            });
         }
     }
 
