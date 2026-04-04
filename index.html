@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Satellite Live Viewer</title>
 
   <!-- Google Fonts -->
@@ -33,11 +33,13 @@
         <input type="range" id="trail-slider" min="1" max="24" value="18" />
       </div>
 
-      <div class="control-group">
-        <label>Add Custom TLE (2 or 3 lines)</label>
-        <textarea id="tle-input" rows="3" placeholder="ISS (ZARYA)&#10;1 25544U 98067A   21092.6..."></textarea>
-        <button id="add-tle-btn">Add Satellite</button>
-      </div>
+      <details class="control-group custom-tle-section">
+        <summary>Add Custom TLE (2 or 3 lines)</summary>
+        <div class="tle-input-container">
+          <textarea id="tle-input" rows="3" placeholder="ISS (ZARYA)&#10;1 25544U 98067A   21092.6..."></textarea>
+          <button id="add-tle-btn">Add Satellite</button>
+        </div>
+      </details>
 
       <div class="list-header">Satellites</div>
       <div id="status-container" class="status-container list-view">

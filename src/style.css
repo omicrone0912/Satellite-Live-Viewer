@@ -132,10 +132,27 @@ h1 {
   gap: 8px;
 }
 
-.control-group label {
+.control-group label,
+.control-group summary {
   font-size: 0.9rem;
   font-weight: 500;
   color: #dee2e6;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+
+.custom-tle-section {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+
+.tle-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 
@@ -327,20 +344,43 @@ button#add-tle-btn:hover {
   /* Removed transition to fix Leaflet zoom disappearing marker bug */
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1024px) {
+  .panel-overlay {
+    width: 280px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
   .panel-overlay {
     top: auto;
     bottom: 0;
     left: 0;
     right: 0;
     width: 100%;
-    border-radius: 20px 20px 0 0;
-    padding: 16px 20px 24px;
+    border-radius: 24px 24px 0 0;
+    padding: 20px 24px 30px;
     box-sizing: border-box;
-    max-height: 45vh;
+    max-height: 50vh;
+    display: flex;
+    flex-direction: column;
   }
 
+  /* Limit the height of the list exactly so it scrolls gracefully inside the bottom sheet */
   .status-container {
-    max-height: calc(45vh - 80px);
+    max-height: calc(50vh - 180px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent iOS Safari from zooming in on inputs */
+  textarea#tle-input, input[type="range"] {
+    font-size: 16px;
+  }
+
+  /* Move Leaflet controls out of the way of the bottom sheet */
+  .leaflet-bottom.leaflet-right {
+    bottom: calc(50vh + 10px) !important;
+    transition: bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 }
