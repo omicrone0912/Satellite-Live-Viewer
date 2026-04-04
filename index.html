@@ -37,7 +37,11 @@
         <summary>Add Custom TLE (2 or 3 lines)</summary>
         <div class="tle-input-container">
           <textarea id="tle-input" rows="3" placeholder="ISS (ZARYA)&#10;1 25544U 98067A   21092.6..."></textarea>
-          <button id="add-tle-btn">Add Satellite</button>
+          <div class="tle-actions">
+            <button id="add-tle-btn">Add Text</button>
+            <label for="tle-file-upload" class="file-upload-btn">📁 JSON/CSV</label>
+            <input type="file" id="tle-file-upload" accept=".json,.csv" style="display: none;" />
+          </div>
         </div>
       </details>
 

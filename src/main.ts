@@ -85,6 +85,60 @@ const initializeApp = () => {
     }
   };
 
+  uiManager.onFileUpload = async (file) => {
+    try {
+      const text = await file.text();
+      let newSats: SatelliteInfo[] = [];
+
+      if (file.name.toLowerCase().endsWith('.json')) {
+        const json = JSON.parse(text);
+        if (Array.isArray(json)) {
+          let compiledTLEText = '';
+          json.forEach(item => {
+            // Heuristic matching
+            const name = item.name || item.OBJECT_NAME || item.title || item.Name || 'Unknown';
+            const tle1 = item.tle1 || item.TLE_LINE1 || item.line1 || item.TLE1 || '';
+            const tle2 = item.tle2 || item.TLE_LINE2 || item.line2 || item.TLE2 || '';
+            if (tle1 && tle2) {
+              compiledTLEText += `${name}\n${tle1}\n${tle2}\n`;
+            }
+          });
+          newSats = parseTLE(compiledTLEText, 'Custom (JSON)');
+        }
+      } else if (file.name.toLowerCase().endsWith('.csv')) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        let compiledTLEText = '';
+        
+        let startIndex = 0;
+        // Skip header heuristically
+        if (lines[0].toLowerCase().includes('name') || lines[0].toLowerCase().includes('tle')) {
+          startIndex = 1;
+        }
+
+        for (let i = startIndex; i < lines.length; i++) {
+          // Splitting cautiously to handle basic CSV without quoted commas
+          const cols = lines[i].split(',');
+          if (cols.length >= 3) {
+            compiledTLEText += `${cols[0].trim()}\n${cols[1].trim()}\n${cols[2].trim()}\n`;
+          }
+        }
+        newSats = parseTLE(compiledTLEText, 'Custom (CSV)');
+      }
+
+      if (newSats.length > 0) {
+        satellitesInfo.push(...newSats);
+        renderList();
+        updateLoop();
+        alert(`Successfully imported ${newSats.length} satellites.`);
+      } else {
+        alert("No valid satellite data found in the file. Please check the format.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error reading or parsing file.");
+    }
+  };
+
   // Animation Loop Function
   const updateLoop = () => {
     if (satellitesInfo.length === 0) return;

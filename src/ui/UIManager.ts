@@ -11,6 +11,7 @@ export class UIManager {
     // Callbacks
     public onTrailLengthChange: (hours: number) => void = () => { };
     public onAddSatellite: (tleString: string) => void = () => { };
+    public onFileUpload: (file: File) => void = () => { };
 
     constructor() {
         this.statusContainer = document.getElementById('status-container')!;
@@ -37,6 +38,17 @@ export class UIManager {
                 this.tleInput.value = ''; // clear
             }
         });
+
+        const fileInput = document.getElementById('tle-file-upload') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const files = (e.target as HTMLInputElement).files;
+                if (files && files.length > 0) {
+                    this.onFileUpload(files[0]);
+                    fileInput.value = ''; // clear file input so same file can be selected again
+                }
+            });
+        }
     }
 
     showError(message: string) {
