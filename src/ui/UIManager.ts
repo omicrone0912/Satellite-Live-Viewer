@@ -68,7 +68,8 @@ export class UIManager {
             return;
         }
 
-        const createSatItem = (sat: SatelliteInfo) => {
+        // Render groups as single checkboxes
+        for (const [groupName, sats] of Object.entries(groups)) {
             const item = document.createElement('div');
             item.className = 'sat-list-item';
 
@@ -78,18 +79,24 @@ export class UIManager {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'sat-checkbox';
-            checkbox.checked = sat.visible;
+            
+            // Checked if ALL satellites in the group are currently visible
+            checkbox.checked = sats.every(s => s.visible);
             checkbox.addEventListener('change', (e) => {
-                onToggleVisibility(sat.id, (e.target as HTMLInputElement).checked);
+                const isChecked = (e.target as HTMLInputElement).checked;
+                sats.forEach(sat => {
+                    onToggleVisibility(sat.id, isChecked);
+                });
             });
 
             const colorDot = document.createElement('span');
             colorDot.className = 'sat-color-dot';
-            colorDot.style.setProperty('--dot-color', sat.color);
+            colorDot.style.setProperty('--dot-color', sats[0].color);
 
             const nameSpan = document.createElement('span');
-            nameSpan.textContent = sat.name;
-            nameSpan.title = sat.name;
+            // Show constellation count if multiple satellites exist in the group
+            nameSpan.textContent = sats.length > 1 ? `${groupName} (${sats.length} Sats)` : sats[0].name;
+            nameSpan.title = nameSpan.textContent;
             nameSpan.style.overflow = 'hidden';
             nameSpan.style.textOverflow = 'ellipsis';
             nameSpan.style.whiteSpace = 'nowrap';
@@ -100,24 +107,7 @@ export class UIManager {
             label.appendChild(nameSpan);
 
             item.appendChild(label);
-            return item;
-        };
-
-        // Render groups
-        for (const [groupName, sats] of Object.entries(groups)) {
-            const groupHeader = document.createElement('div');
-            groupHeader.style.fontWeight = 'bold';
-            groupHeader.style.marginTop = '12px';
-            groupHeader.style.marginBottom = '6px';
-            groupHeader.style.fontSize = '0.9rem';
-            groupHeader.style.color = '#adb5bd';
-            groupHeader.textContent = groupName;
-
-            this.statusContainer.appendChild(groupHeader);
-
-            sats.forEach(sat => {
-                this.statusContainer.appendChild(createSatItem(sat));
-            });
+            this.statusContainer.appendChild(item);
         }
     }
 }
