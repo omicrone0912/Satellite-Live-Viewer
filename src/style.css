@@ -3,7 +3,7 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: dark;
   color: #f0f0f0;
   background-color: #121212;
 
@@ -45,15 +45,7 @@ body {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
-@media (prefers-color-scheme: light) {
 
-  .leaflet-layer,
-  .leaflet-control-zoom-in,
-  .leaflet-control-zoom-out,
-  .leaflet-control-attribution {
-    filter: none;
-  }
-}
 
 /* Glassmorphism Panel Overlay */
 .panel-overlay {
@@ -72,14 +64,7 @@ body {
   transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: light) {
-  .panel-overlay {
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-    color: #333;
-  }
-}
+
 
 header {
   margin-bottom: 20px;
@@ -87,11 +72,7 @@ header {
   padding-bottom: 12px;
 }
 
-@media (prefers-color-scheme: light) {
-  header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  }
-}
+
 
 h1 {
   font-size: 1.4rem;
@@ -110,11 +91,7 @@ h1 {
   font-weight: 500;
 }
 
-@media (prefers-color-scheme: light) {
-  .subtitle {
-    color: #6c757d;
-  }
-}
+
 
 .status-container {
   display: flex;
@@ -161,11 +138,7 @@ h1 {
   color: #dee2e6;
 }
 
-@media (prefers-color-scheme: light) {
-  .control-group label {
-    color: #495057;
-  }
-}
+
 
 input[type="range"] {
   width: 100%;
@@ -185,13 +158,7 @@ textarea#tle-input {
   resize: vertical;
 }
 
-@media (prefers-color-scheme: light) {
-  textarea#tle-input {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    color: #333;
-  }
-}
+
 
 textarea#tle-input:focus {
   outline: 2px solid #00f2fe;
@@ -221,11 +188,7 @@ button#add-tle-btn:hover {
   padding-bottom: 4px;
 }
 
-@media (prefers-color-scheme: light) {
-  .list-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  }
-}
+
 
 .list-view {
   gap: 8px;
@@ -242,22 +205,13 @@ button#add-tle-btn:hover {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-@media (prefers-color-scheme: light) {
-  .sat-list-item {
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-  }
-}
+
 
 .sat-list-item:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-@media (prefers-color-scheme: light) {
-  .sat-list-item:hover {
-    background: rgba(0, 0, 0, 0.05);
-  }
-}
+
 
 .sat-list-label {
   display: flex;
@@ -361,12 +315,7 @@ button#add-tle-btn:hover {
   text-align: center;
 }
 
-@media (prefers-color-scheme: light) {
-  .error-banner {
-    background: rgba(250, 82, 82, 0.1);
-    color: #e03131;
-  }
-}
+
 
 .hidden {
   display: none !important;
