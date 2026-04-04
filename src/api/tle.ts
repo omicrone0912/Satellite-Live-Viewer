@@ -6,7 +6,7 @@ const CACHE_EXPIRE_MS = 1000 * 60 * 60 * 4; // 4 hours
 
 interface TLECache {
     timestamp: number;
-    data: SatelliteInfo[];
+    texts: { url: string; groupName: string; color: string; text: string }[];
 }
 
 const FALLBACK_TLE = `QZS-1R (MICHIBIKI-1R)   
@@ -37,12 +37,13 @@ export const fetchAllSatellites = async (): Promise<SatelliteInfo[]> => {
     if (cachedDataStr) {
         try {
             const cachedData: TLECache = JSON.parse(cachedDataStr);
-            if (Date.now() - cachedData.timestamp < CACHE_EXPIRE_MS && cachedData.data.length > 0) {
+            if (Date.now() - cachedData.timestamp < CACHE_EXPIRE_MS && cachedData.texts && cachedData.texts.length > 0) {
                 console.log('Using cached TLE data');
-                // satrec doesn't survive JSON serialization/deserialization well unless re-parsed
-                // So cache shouldn't be used for ready SatRec objects or we must re-parse.
-                // It's safer to not cache SatRec directly, but text. Given time constraints, 
-                // we'll just skip caching in JSON and fetch normally or we cache raw TLE strings.
+                const parsedSats: SatelliteInfo[] = [];
+                cachedData.texts.forEach(t => {
+                   parsedSats.push(...parseTLE(t.text, t.groupName, t.color));
+                });
+                return parsedSats;
             }
         } catch (e) { }
     }
@@ -62,6 +63,8 @@ export const fetchAllSatellites = async (): Promise<SatelliteInfo[]> => {
     const allParsed: SatelliteInfo[] = [];
 
     try {
+        const cachedTexts: { url: string; groupName: string; color: string; text: string }[] = [];
+        
         const fetchPromises = targets.map(async (target) => {
             const response = await fetch(target.url, {
                 method: 'GET',
@@ -70,6 +73,7 @@ export const fetchAllSatellites = async (): Promise<SatelliteInfo[]> => {
             if (!response.ok) return;
             const text = await response.text();
             if (text && text.trim().length > 0) {
+                cachedTexts.push({ url: target.url, groupName: target.groupName, color: target.color, text });
                 const parsed = parseTLE(text, target.groupName, target.color);
                 allParsed.push(...parsed);
             }
@@ -79,6 +83,15 @@ export const fetchAllSatellites = async (): Promise<SatelliteInfo[]> => {
 
         if (allParsed.length === 0) {
             throw new Error('Received invalid/empty TLE data from all sources.');
+        }
+
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                timestamp: Date.now(),
+                texts: cachedTexts
+            }));
+        } catch (e) {
+            console.warn('Failed to save to localStorage', e);
         }
 
         return allParsed;
